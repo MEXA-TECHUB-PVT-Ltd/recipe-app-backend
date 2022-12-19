@@ -1,13 +1,13 @@
-const CategorySchema = require('../../Model/CategoriesModel/Categories.model')
-const Category =CategorySchema.Categories_schema
+const Category = require('../../Model/CategoriesModel/Categories.model')
 const ResponseCode = require('../../Utils/Responses/ResponseCode')
 
 const CreateCategory = (req,res)=>{
       
     const {
         Category_name,
-        Recipe_Country,
-        Recipe_type} = req.body
+        // Recipe_Country,
+        // Recipe_type
+      } = req.body
     
         if (!req.body.Category_name) {
             res.status(400).send({ message: "Content can not be empty!" });
@@ -17,8 +17,8 @@ const CreateCategory = (req,res)=>{
 
     const category= new Category({
         Category_name,
-        Recipe_Country,
-        Recipe_type
+        // Recipe_Country,
+        // Recipe_type
     })
 
     // save category into database
@@ -78,8 +78,7 @@ const UpdateCategory = (req,res)=>{
     const {
         id,
         Category_name,
-        Recipe_Country,
-        Recipe_type
+  
     }  = req.body
 
         if(!req.body){
@@ -89,8 +88,6 @@ const UpdateCategory = (req,res)=>{
 
         Category.findByIdAndUpdate(id, {
             Category_name,
-            Recipe_Country,
-            Recipe_type
         }).then(data=>{
       res.status(200).send({
         message:" Category updated successfully",

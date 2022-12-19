@@ -1,46 +1,61 @@
-const UserSchema = require('../../Model/UserModel/User.model')
-const User = UserSchema.User_schema
+const User = require('../../Model/UserModel/User.model')
 const Otp_schema = require('../../Model/OtpModel/Otp.model')
 const OTP = Otp_schema.Otp_schema
 const { generateOTP } = require('../../Utils/Services/Otp')
 const { sendMail } = require('../../Utils/Services/Mail')
 const ResponseCode = require('../../Utils/Responses/ResponseCode')
+const bcrypt = require('bcrypt');
 
 const createUser = async (req,res)=>{
    
     console.log("create User Call")
    
-    const {UserName,UserPass,UserEmail,User_Preferences, User_genere} = req.body
+    const {UserName,UserPass,UserEmail,User_Preferences, User_genere,location} = req.body
+    const UserPass1 = bcrypt.hashSync(UserPass, 12)
+    User.find({ UserEmail: UserEmail }, (error, result) => {
+      if (error) {
+          res.send(error)
+      } else {
+          // res.send(result)
+          if (result === undefined || result.length == 0) {
+            console.log('no data')
+            const user= new User({
+              UserName,
+              UserPass:UserPass1,
+              UserEmail,
+              User_Preferences, 
+              User_genere,
+              location
+          })
+          if (!req.body.UserName) {
+              res.status(400).send({ message: "Content can not be empty!" });
+              return;
+            }
+      
+          // save User into database
+      
+      user.save(user)
+        .then(data => {
+          res.status(200).send({
+            data,
+            message:"User account created Successfully",
+            resCode: ResponseCode.ACCOUNT_CREATED_SUCCESSFULLY
+          });
+        })
+        .catch(err => {
+          res.status(500).send({
+            message:
+              err.message || "Some error occurred while creating the User.",
+              resCode: ResponseCode.ERROR_MESSAGE
+          });
+        });
+          }else{
+          res.json({message:'This Email Already Exist',data:result})
+          }
+        }
+      })
     
-    const user= new User({
-        UserName,
-        UserPass,
-        UserEmail,
-        User_Preferences, 
-        User_genere
-    })
-    if (!req.body.UserName) {
-        res.status(400).send({ message: "Content can not be empty!" });
-        return;
-      }
-
-    // save User into database
-
-user.save(user)
-  .then(data => {
-    res.status(200).send({
-      data,
-      message:"User account created Successfully",
-      resCode: ResponseCode.ACCOUNT_CREATED_SUCCESSFULLY
-    });
-  })
-  .catch(err => {
-    res.status(500).send({
-      message:
-        err.message || "Some error occurred while creating the User.",
-        resCode: ResponseCode.ERROR_MESSAGE
-    });
-  });
+ 
    
    
 }
@@ -73,14 +88,20 @@ const UserSignIn= async (req,res)=>{
             return res.status(404).send({ message: "User Not found." });
           }
           console.log("here is admin pass ",user.UserPass)
-
-          if(user.UserPass== UserPass){
-            res.status(200).send({
-               user,
-                message:"User account Login Successfully",
-                resCode:ResponseCode.LOGIN_SUCCESSFULL
-              
-              });
+          if(bcrypt.compareSync(UserPass, user.UserPass)){
+            const updateData = {
+              isLogin:true
+          }
+          const options = {
+              new: true
+          }
+          User.findByIdAndUpdate(user._id, updateData, options, (error, result) => {
+              if (error) {
+                  res.json(error.message)
+              } else {
+                  res.json({data:result,message:"Login Successfully"})
+              }
+          })
           }else{
             res.status(500).send({
                  
@@ -173,10 +194,11 @@ const UserSignIn= async (req,res)=>{
            }else{
             response.message = "Otp receive successfully"
             response.statusText= 'success'
+    const UserPass1 = bcrypt.hashSync(newPass, 12)
           
     
             User.findOneAndUpdate({id:PersonId}, {
-                $set:{UserPass:newPass}
+                $set:{UserPass:UserPass1}
             })
             .then(data => {
               if (!data) {
@@ -259,21 +281,15 @@ const UserSignIn= async (req,res)=>{
     
     const ViewUser = async(req,res)=>{
       const {id} = req.body
-      const Data = await User.findById(id)
-      if(Data){
-      res.status(200).send({
-        Data,
-        message:"User Found Successfully"
-      });
-    }else{
-      res.status(500).send({
-        message:"Error Finding User"
-      });
+      User.find({ _id: id }, function (err, foundResult) {
+        try {
+            res.json({data:foundResult})
+        } catch (err) {
+            res.json(err)
+        }
+    }).populate('User_Preferences').populate('User_genere')
+    
     }
-    }
-
-
-
 
   const UpdateUser = async(req,res)=>{
      const {id,UserEmail,User_Preferences,User_genere} = req.body
@@ -339,15 +355,14 @@ const UserSignIn= async (req,res)=>{
 
   const  ViewAllUsers = async (req,res)=>{
      
-    const Data =  await User.find();
-  console.log(Data)
-  res.status(200).send(
-    {
-        Data,
-        message:"User data found successfully"
-    }
-     ) 
-  }
+    User.find({}, (error, result) => {
+      if (error) {
+          res.send(error)
+      } else {
+          res.send(result)
+      }
+  }).sort({ $natural: -1 }).populate('User_Preferences').populate('User_genere')
+}
 
 
 module.exports = {

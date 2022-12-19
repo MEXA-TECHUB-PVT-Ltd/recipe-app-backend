@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
 const UserSchema=new mongoose.Schema({
-
     UserName:{
         type:String,
         required:true,
@@ -18,25 +17,20 @@ const UserSchema=new mongoose.Schema({
        },
 
     User_Preferences:{
-        type:String,
-        required:true,
-       },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'UserPref'
+    },
 
     User_genere:{
-        type:String,
-        required:true,
-       },
-
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'UserGenere'
+    },
+    location:String,
+    isLogin:Boolean
 
 }
 )
 
-UserSchema.method("toJSON", function() {
-    const { __v, _id, ...object } = this.toObject();
-    object.id = _id;
-    return object;
-  });
+module.exports = mongoose.model("Users", UserSchema);
 
-const User_schema = mongoose.model("Users", UserSchema);
-module.exports={ User_schema}
 

@@ -1,39 +1,25 @@
-const IngredientsSchema = require('../../Model/IngredientsModel/Ingredients.model')
-const Ingredients = IngredientsSchema.Ingredients_schema
+// const IngredientsSchema = require('../../Model/IngredientsModel/Ingredients.model')
+const Ingredients = require('../../Model/IngredientsModel/Ingredients.model')
+const mongoose = require("mongoose");
 const ResponseCode = require('../../Utils/Responses/ResponseCode')
 
 
 const CreateIngredients= async(req,res)=>{
-    console.log("create Ingredients Call")
-    if (!req.body) {
-      res.status(400).send({ message: "Content can not be empty!" });
-      return;
-    }
-    const { Item_Name,Item_quantity} = req.body
-    
-    const ingredients= new Ingredients({
-        Item_Name,Item_quantity
-    })
-  
-    // save User into database
+  const IngredientsData = new Ingredients({
+    _id: mongoose.Types.ObjectId(),
+    Item_Name: req.body.Item_Name,
+    Item_quantity: req.body.Item_quantity,
+    recipie_id: req.body.recipie_id,
+})
+IngredientsData.save((error, result) => {
+    if (error) {
+        res.send(error)
+    } else {
+        res.send(result)
+        console.log(result)
 
-ingredients.save(ingredients)
-  .then(data => {
-    res.status(200).send({
-      data,
-      message:"Ingredients created Successfully",
-      resCode: ResponseCode.ACCOUNT_CREATED_SUCCESSFULLY
-    });
-  })
-  .catch(err => {
-    res.status(500).send({
-      message:
-        err.message || "Some error occurred while creating the Ingredients",
-        resCode: ResponseCode.ERROR_MESSAGE
-    });
-  });
-   
-  
+    }
+})
 
 }
 
@@ -82,6 +68,16 @@ const ViewIngredient= async(req,res)=>{
     });
   }
 }
+const ViewIngredientOfRecipieId= async(req,res)=>{
+  const {recipie_id} = req.body
+  Ingredients.find({ recipie_id:recipie_id}, function (err, foundResult) {
+    try {
+        res.json({ data: foundResult,count:foundResult.length })
+    } catch (err) {
+        res.json(err)
+    }
+})
+}
 
 const UpdateIngredient= async(req,res)=>{
     const {
@@ -129,4 +125,5 @@ module.exports = {
     RemoveIngredients,
     UpdateIngredient,
     ViewIngredient,
-    ViewAllIngredients }
+    ViewAllIngredients,
+    ViewIngredientOfRecipieId }

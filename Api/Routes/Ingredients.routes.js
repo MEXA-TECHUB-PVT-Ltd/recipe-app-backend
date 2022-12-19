@@ -7,4 +7,6 @@ app.post('/UpdateIngredients',IngredientController.UpdateIngredient)
 app.post('/DeleteIngredient',IngredientController.RemoveIngredients)
 app.get('/ViewAllIngredients',IngredientController.ViewAllIngredients)
 app.post('/ViewCategory',IngredientController.ViewIngredient)
+app.post('/ViewIngredientOfRecipieId',IngredientController.ViewIngredientOfRecipieId)
+
 module.exports= app

@@ -24,7 +24,12 @@ app.get('/', (req, res) => {
 
   const AdminRoute = require('./Api/Routes/Admin.routes')
   app.use('/AdminApi',AdminRoute)
- 
+
+  const User_PrefRoute = require('./Api/Routes/User_Pref.routes')
+  app.use('/User_Pref',User_PrefRoute)
+
+  const User_GenereRoute = require('./Api/Routes/User_Genere.routes')
+  app.use('/User_Genere',User_GenereRoute)
  
   const RecipeRoute = require('./Api/Routes/Recipes.routes')
   app.use('/RecipeApi',RecipeRoute)
@@ -33,6 +38,9 @@ app.get('/', (req, res) => {
 
   const SavedRecipeRoute = require('./Api/Routes/SavedRecipe.routes')
   app.use('/SavedRecipeApi',SavedRecipeRoute)
+ 
+  const AboutUsRoute = require('./Api/Routes/AboutUs.routes')
+  app.use('/About_Us',AboutUsRoute)
  
 
 
